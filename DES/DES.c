@@ -1,4 +1,3 @@
-/*
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
@@ -165,17 +164,17 @@ int RoundKey[16][48];
 int main() {
 	char plaintext[9], ciphertext[17], key[9], plain[9];
 	
-	printf("Æò¹®(Plaintext) ÀÔ·Â (8byte): ");
+	printf("í‰ë¬¸(Plaintext) ì…ë ¥ (8byte): ");
 	gets_s(plaintext, sizeof(plaintext));
 	if (strlen(plaintext) != 8) {
-		printf("¹®ÀÚ 8°³ ÀÔ·Â!\n");
+		printf("ë¬¸ì 8ê°œ ì…ë ¥!\n");
 		exit(1);
 	}
 
-	printf("Å°(Key) ÀÔ·Â (8byte): ");
+	printf("í‚¤(Key) ì…ë ¥ (8byte): ");
 	gets_s(key, sizeof(key));
 	if (strlen(key) != 8) {
-		printf("¹®ÀÚ 8°³ ÀÔ·Â!\n");
+		printf("ë¬¸ì 8ê°œ ì…ë ¥!\n");
 		exit(1);
 	}
 	
@@ -192,73 +191,73 @@ void encrypt(char* pt, char* ct, char* key) {
 	int r_xor[48], rc_xor[32], rs_xor[32], lr_xor[32];
 	int round = 16;
 
-	// Æò¹®À» 2Áø¼ö·Î º¯È¯
+	// í‰ë¬¸ì„ 2ì§„ìˆ˜ë¡œ ë³€í™˜
 	str2bin(pt, b_pt);
 
-	// Å°¸¦ 2Áø¼ö·Î º¯È¯
+	// í‚¤ë¥¼ 2ì§„ìˆ˜ë¡œ ë³€í™˜
 	str2bin(key, b_key);
 
-	// Æò¹® ÃÊ±â Ä¡È¯ (Initial Permutation Table)
+	// í‰ë¬¸ ì´ˆê¸° ì¹˜í™˜ (Initial Permutation Table)
 	initial_permutation(b_pt, i_pt);
 
-	// Æò¹®À» 32bit¾¿ ¿ŞÂÊ, ¿À¸¥ÂÊÀ¸·Î ³ª´®
+	// í‰ë¬¸ì„ 32bitì”© ì™¼ìª½, ì˜¤ë¥¸ìª½ìœ¼ë¡œ ë‚˜ëˆ”
 	for (int i = 0; i < 32; i++) {
 		b_left[i] = i_pt[i];
 		b_right[i] = i_pt[i + 32];
 	}
 
-	// Å° ¾ĞÃà (Parity Bit Drop Table, 64bit -> 56bit)
+	// í‚¤ ì••ì¶• (Parity Bit Drop Table, 64bit -> 56bit)
 	key64to56(b_key, key56bit);
 
 	for (int i = 0; i < round; i++) {
-		// ¿À¸¥ÂÊ È®Àå Ä¡È¯ (Expansion Permutation Table, 32bit -> 48bit)
+		// ì˜¤ë¥¸ìª½ í™•ì¥ ì¹˜í™˜ (Expansion Permutation Table, 32bit -> 48bit)
 		expansion_permutation(b_right, bp_right);
-		// Å° shift ¿¬»ê (Key Shift Table)
+		// í‚¤ shift ì—°ì‚° (Key Shift Table)
 		key_shift(key56bit, i);
-		// Å° ¾ĞÃà (Compression Permutation Table, 56bit -> 48bit)
+		// í‚¤ ì••ì¶• (Compression Permutation Table, 56bit -> 48bit)
 		key56to48(key56bit, key48bit);
 
-		// Round Key ÀúÀå
+		// Round Key ì €ì¥
 		for (int j = 0; j < sizeof(key48bit) / sizeof(int); j++) {
 			RoundKey[i][j] = key48bit[j];
 		}
 
-		// ¿À¸¥ÂÊ°ú Å° XOR ¿¬»ê
+		// ì˜¤ë¥¸ìª½ê³¼ í‚¤ XOR ì—°ì‚°
 		for (int i = 0; i < sizeof(key48bit) / sizeof(int); i++) {
 			r_xor[i] = xor_operation(bp_right[i], key48bit[i]);
 		}
-		// XOR °á°ú ¾ĞÃà (S-Box Table, 48bit -> 32bit)
+		// XOR ê²°ê³¼ ì••ì¶• (S-Box Table, 48bit -> 32bit)
 		compression_permutation(r_xor, rc_xor);
-		// ¾ĞÃà °á°ú Ä¡È¯ (Straight Permutation Table)
+		// ì••ì¶• ê²°ê³¼ ì¹˜í™˜ (Straight Permutation Table)
 		straight_permutation(rc_xor, rs_xor);
-		// ¿ŞÂÊ°ú ¿À¸¥ÂÊ XOR ¿¬»ê
+		// ì™¼ìª½ê³¼ ì˜¤ë¥¸ìª½ XOR ì—°ì‚°
 		for (int i = 0; i < sizeof(rs_xor) / sizeof(int); i++) {
 			lr_xor[i] = xor_operation(b_left[i], rs_xor[i]);
 		}
-		// round È½¼ö¸é ºüÁ®³ª¿È
+		// round íšŸìˆ˜ë©´ ë¹ ì ¸ë‚˜ì˜´
 		if (i + 1 == round) {
 			break;
 		}
-		// ¿ŞÂÊ -> ¿À¸¥ÂÊ, ¿À¸¥ÂÊ -> ¿ŞÂÊ
+		// ì™¼ìª½ -> ì˜¤ë¥¸ìª½, ì˜¤ë¥¸ìª½ -> ì™¼ìª½
 		for (int i = 0; i < 32; i++) {
 			b_left[i] = b_right[i];
 			b_right[i] = lr_xor[i];
 		}
-		// ¶ó¿îµå¸¶´Ù Ãâ·Â
+		// ë¼ìš´ë“œë§ˆë‹¤ ì¶œë ¥
 		print_round(b_left, b_right, i);
 	}
 
-	// ¿ŞÂÊ -> ¿À¸¥ÂÊ, ¿À¸¥ÂÊ -> ¿ŞÂÊ ÇÏÁö ¾Ê°í ³ª¿È
+	// ì™¼ìª½ -> ì˜¤ë¥¸ìª½, ì˜¤ë¥¸ìª½ -> ì™¼ìª½ í•˜ì§€ ì•Šê³  ë‚˜ì˜´
 	for (int i = 0; i < 32; i++) {
 		b_ct[i] = lr_xor[i];
 		b_ct[i + 32] = b_right[i];
 	}
-	// Æò¹® ¿ª Ä¡È¯ (Inverse Initial Permutation Table)
+	// í‰ë¬¸ ì—­ ì¹˜í™˜ (Inverse Initial Permutation Table)
 	inverse_initial_permutation(b_ct, i_ct);
-	// 2Áø¼ö¸¦ ¾ÏÈ£¹®À¸·Î º¯È¯
+	// 2ì§„ìˆ˜ë¥¼ ì•”í˜¸ë¬¸ìœ¼ë¡œ ë³€í™˜
 	bin2hex(i_ct, ct);
 
-	printf("¾ÏÈ£¹®(Ciphertext) Ãâ·Â: %s\n", ct);
+	printf("ì•”í˜¸ë¬¸(Ciphertext) ì¶œë ¥: %s\n", ct);
 }
 
 void decrypt(char* ct, char* pt) {
@@ -268,64 +267,64 @@ void decrypt(char* ct, char* pt) {
 	int r_xor[48], rc_xor[32], rs_xor[32], lr_xor[32];
 	int round = 16;
 
-	// ¾ÏÈ£¹®(16Áø¼ö)À» 2Áø¼ö·Î º¯È¯
+	// ì•”í˜¸ë¬¸(16ì§„ìˆ˜)ì„ 2ì§„ìˆ˜ë¡œ ë³€í™˜
 	hex2bin(ct, b_ct);
 
-	// ¾ÏÈ£¹® ÃÊ±â Ä¡È¯ (Initial Permutation Table)
+	// ì•”í˜¸ë¬¸ ì´ˆê¸° ì¹˜í™˜ (Initial Permutation Table)
 	initial_permutation(b_ct, i_ct);
 
-	// Æò¹®À» 32bit¾¿ ¿ŞÂÊ, ¿À¸¥ÂÊÀ¸·Î ³ª´®
+	// í‰ë¬¸ì„ 32bitì”© ì™¼ìª½, ì˜¤ë¥¸ìª½ìœ¼ë¡œ ë‚˜ëˆ”
 	for (int i = 0; i < 32; i++) {
 		b_left[i] = i_ct[i];
 		b_right[i] = i_ct[i + 32];
 	}
 
 	for (int i = 0; i < round; i++) {
-		// ¿À¸¥ÂÊ È®Àå Ä¡È¯ (Expansion Permutation Table, 32bit -> 48bit)
+		// ì˜¤ë¥¸ìª½ í™•ì¥ ì¹˜í™˜ (Expansion Permutation Table, 32bit -> 48bit)
 		expansion_permutation(b_right, bp_right);
 		
-		// Round Key °¡Á®¿È
+		// Round Key ê°€ì ¸ì˜´
 		for (int j = 0; j < sizeof(RoundKey[0]) / sizeof(int); j++) {
 			key48bit[j] = RoundKey[round - i - 1][j];
 		}
 
-		// ¿À¸¥ÂÊ°ú Å° XOR ¿¬»ê
+		// ì˜¤ë¥¸ìª½ê³¼ í‚¤ XOR ì—°ì‚°
 		for (int i = 0; i < sizeof(key48bit) / sizeof(int); i++) {
 			r_xor[i] = xor_operation(bp_right[i], key48bit[i]);
 		}
-		// XOR °á°ú ¾ĞÃà (S-Box Table, 48bit -> 32bit)
+		// XOR ê²°ê³¼ ì••ì¶• (S-Box Table, 48bit -> 32bit)
 		compression_permutation(r_xor, rc_xor);
-		// ¾ĞÃà °á°ú Ä¡È¯ (Straight Permutation Table)
+		// ì••ì¶• ê²°ê³¼ ì¹˜í™˜ (Straight Permutation Table)
 		straight_permutation(rc_xor, rs_xor);
-		// ¿ŞÂÊ°ú ¿À¸¥ÂÊ XOR ¿¬»ê
+		// ì™¼ìª½ê³¼ ì˜¤ë¥¸ìª½ XOR ì—°ì‚°
 		for (int i = 0; i < sizeof(rs_xor) / sizeof(int); i++) {
 			lr_xor[i] = xor_operation(b_left[i], rs_xor[i]);
 		}
-		// round È½¼ö¸é ºüÁ®³ª¿È
+		// round íšŸìˆ˜ë©´ ë¹ ì ¸ë‚˜ì˜´
 		if (i + 1 == round) {
 			break;
 		}
-		// ¿ŞÂÊ -> ¿À¸¥ÂÊ, ¿À¸¥ÂÊ -> ¿ŞÂÊ
+		// ì™¼ìª½ -> ì˜¤ë¥¸ìª½, ì˜¤ë¥¸ìª½ -> ì™¼ìª½
 		for (int i = 0; i < 32; i++) {
 			b_left[i] = b_right[i];
 			b_right[i] = lr_xor[i];
 		}
-		// ¶ó¿îµå¸¶´Ù Ãâ·Â
+		// ë¼ìš´ë“œë§ˆë‹¤ ì¶œë ¥
 		print_round(b_left, b_right, i);
 	}
 
-	// ¿ŞÂÊ -> ¿À¸¥ÂÊ, ¿À¸¥ÂÊ -> ¿ŞÂÊ ÇÏÁö ¾Ê°í ³ª¿È
+	// ì™¼ìª½ -> ì˜¤ë¥¸ìª½, ì˜¤ë¥¸ìª½ -> ì™¼ìª½ í•˜ì§€ ì•Šê³  ë‚˜ì˜´
 	for (int i = 0; i < 32; i++) {
 		b_pt[i] = lr_xor[i];
 		b_pt[i + 32] = b_right[i];
 	}
-	// ¾ÏÈ£¹® ¿ª Ä¡È¯ (Inverse Initial Permutation Table)
+	// ì•”í˜¸ë¬¸ ì—­ ì¹˜í™˜ (Inverse Initial Permutation Table)
 	inverse_initial_permutation(b_pt, i_pt);
 	
-	// 2Áø¼ö¸¦ Æò¹®À¸·Î º¯È¯
+	// 2ì§„ìˆ˜ë¥¼ í‰ë¬¸ìœ¼ë¡œ ë³€í™˜
 	bin2str(i_pt, pt);
 
-	printf("Æò¹®(Plaintext) Ãâ·Â: %s\n", pt);
+	printf("í‰ë¬¸(Plaintext) ì¶œë ¥: %s\n", pt);
 }
 
 void str2bin(char* in, int* out) {
@@ -574,4 +573,3 @@ void hex2bin(char* in, int* out) {
 		}
 	}
 }
-*/
